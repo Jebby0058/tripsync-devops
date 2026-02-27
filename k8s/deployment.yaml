@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripsync-deployment
+  labels:
+    app: tripsync
+spec:
+  replicas: 2 # เริ่มต้นรันที่ 2 เครื่อง (Pod)
+  selector:
+    matchLabels:
+      app: tripsync
+  template:
+    metadata:
+      labels:
+        app: tripsync
+    spec:
+      containers:
+      - name: tripsync-app
+        image: sweetliberty/tripsync_docker:latest # ดึง Image จาก Docker Hub ของคุณ Jeff
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: "100m" # กิน CPU เริ่มต้นที่ 0.1 Core
+          limits:
+            cpu: "250m" # ห้ามกิน CPU เกิน 0.25 Core (ถ้าแตะ 50% ของตรงนี้ HPA จะทำงาน)
+        env:
+        # เตรียมรอรับค่า Database จาก RDS พรุ่งนี้
+        - name: PORT
+          value: "3000"
+        - name: DB_HOST
+          value: "<รอใส่_Endpoint_ของ_RDS_พรุ่งนี้>"
+        - name: DB_USER
+          value: "admin"
+        - name: DB_PASSWORD
+          value: "admin123"
+        - name: DB_NAME
+          value: "tripsync_db"

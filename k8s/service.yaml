@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripsync-service
+spec:
+  type: LoadBalancer # สั่ง AWS ให้สร้าง Load Balancer แจก IP จริง
+  selector:
+    app: tripsync
+  ports:
+  - protocol: TCP
+    port: 80         # พอร์ตหน้าเว็บ (คนเข้าผ่าน http:// ปกติ)
+    targetPort: 3000 # ชี้เข้ามาที่พอร์ต 3000 ของแอปเรา

@@ -1,0 +1,18 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tripsync-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tripsync-deployment
+  minReplicas: 2      # จำนวนเครื่องขั้นต่ำ
+  maxReplicas: 10     # ขยายร่างได้สูงสุด 10 เครื่อง
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50 # ถ้า CPU ทำงานแตะ 50% เมื่อไหร่ ให้ Scale ทันที
