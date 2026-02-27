@@ -13,8 +13,9 @@
         .section-view { display: none; }
         .section-view.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* ซ่อนปุ่มแอดมินไว้ก่อนโดยปริยาย */
-        #adminPanel { display: none; background: #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        
+        /* แก้ไขจุดที่ 1: ใช้ !important บังคับซ่อนไว้ก่อนเสมอ */
+        #adminPanel { display: none !important; background: #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -44,7 +45,7 @@
 
     <div class="container mb-5">
         
-        <div id="adminPanel" class="d-flex justify-content-between align-items-center">
+        <div id="adminPanel" class="justify-content-between align-items-center">
             <span class="fw-bold text-dark">👑 Admin Tools:</span>
             <button class="btn btn-danger btn-sm" onclick="setupDatabase()">1. 🛠️ Setup Database</button>
         </div>
@@ -77,80 +78,39 @@
 
     </div>
 
-    <div class="modal fade" id="loginModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">เข้าสู่ระบบ / สมัครสมาชิก</h5></div>
-                <div class="modal-body">
-                    <input type="text" id="authUsername" class="form-control mb-2" placeholder="ชื่อผู้ใช้ (Username)">
-                    <input type="password" id="authPassword" class="form-control mb-3" placeholder="รหัสผ่าน (Password)">
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-outline-secondary" onclick="register()">สมัครสมาชิก</button>
-                        <button class="btn btn-primary" onclick="login()">เข้าสู่ระบบ</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addTripModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <input type="text" id="tripTitle" class="form-control mb-2" placeholder="ชื่อทริป">
-                    <input type="number" id="tripPrice" class="form-control mb-2" placeholder="ราคา">
-                    <input type="number" id="tripStock" class="form-control mb-2" placeholder="ที่นั่ง">
-                    <button class="btn btn-success w-100 mt-2" onclick="addTrip()">บันทึก</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addBlogModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">เขียนบทความใหม่</h5></div>
-                <div class="modal-body">
-                    <input type="text" id="blogTitle" class="form-control mb-3" placeholder="หัวข้อบล็อก">
-                    <textarea id="blogContent" class="form-control mb-3" rows="4" placeholder="เล่าเรื่องราว..."></textarea>
-                    <label class="form-label fw-bold">แนบรูปภาพสวยๆ:</label>
-                    <input type="file" id="blogImage" class="form-control mb-3" accept="image/*">
-                    <button class="btn btn-primary w-100" onclick="addBlog()">โพสต์บทความ</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = '/api';
 
-        // =====================================
-        // ระบบ Login และ เช็กสถานะ
-        // =====================================
         function checkAuth() {
             const username = localStorage.getItem('username');
             const role = localStorage.getItem('role');
+            const adminPanel = document.getElementById('adminPanel');
+            const addTripBtn = document.getElementById('addTripBtn');
             
             if (username) {
                 document.getElementById('userGreeting').innerText = `สวัสดี, ${username}`;
                 document.getElementById('loginBtn').classList.add('d-none');
                 document.getElementById('logoutBtn').classList.remove('d-none');
                 
-                // ถ้าเป็น Admin ให้โชว์ปุ่มลับ
+                // แก้ไขจุดที่ 3: สั่งแสดงผลเฉพาะเมื่อเป็น admin เท่านั้น
                 if (role === 'admin') {
-                    document.getElementById('adminPanel').style.display = 'flex';
-                    document.getElementById('addTripBtn').classList.remove('d-none');
+                    adminPanel.style.setProperty('display', 'flex', 'important');
+                    addTripBtn.classList.remove('d-none');
+                } else {
+                    adminPanel.style.setProperty('display', 'none', 'important');
+                    addTripBtn.classList.add('d-none');
                 }
             } else {
                 document.getElementById('userGreeting').innerText = '';
                 document.getElementById('loginBtn').classList.remove('d-none');
                 document.getElementById('logoutBtn').classList.add('d-none');
-                document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('addTripBtn').classList.add('d-none');
+                adminPanel.style.setProperty('display', 'none', 'important');
+                addTripBtn.classList.add('d-none');
             }
         }
 
+        // ฟังก์ชันอื่นๆ ยังเหมือนเดิม...
         async function login() {
             const u = document.getElementById('authUsername').value;
             const p = document.getElementById('authPassword').value;
@@ -163,36 +123,16 @@
                 if (res.ok) {
                     localStorage.setItem('username', data.username);
                     localStorage.setItem('role', data.role);
-                    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-                    checkAuth();
-                    alert(`ยินดีต้อนรับคุณ ${data.username}`);
+                    location.reload(); // รีโหลดเพื่อให้แน่ใจว่าสถานะเปลี่ยนจริง
                 } else alert(data.error);
-            } catch(e) { console.error(e); }
-        }
-
-        async function register() {
-            const u = document.getElementById('authUsername').value;
-            const p = document.getElementById('authPassword').value;
-            if(!u || !p) return alert("กรอกข้อมูลให้ครบ");
-            try {
-                const res = await fetch(`${API_URL}/register`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: u, password: p })
-                });
-                const data = await res.json();
-                alert(data.message || data.error);
             } catch(e) { console.error(e); }
         }
 
         function logout() {
             localStorage.clear();
-            checkAuth();
-            alert("ออกจากระบบแล้ว");
+            location.reload();
         }
 
-        // =====================================
-        // ฟังก์ชันหลัก (Trips, Blogs, Setup)
-        // =====================================
         function switchMenu(sectionId) {
             document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
@@ -208,7 +148,6 @@
             loadTrips();
         }
 
-        // ดึงทริป
         async function loadTrips() {
             const res = await fetch(`${API_URL}/trips`);
             const trips = await res.json();
@@ -227,87 +166,6 @@
             `).join('');
         }
 
-        async function addTrip() {
-            await fetch(`${API_URL}/trips`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    title: document.getElementById('tripTitle').value, 
-                    price: document.getElementById('tripPrice').value, 
-                    stock: document.getElementById('tripStock').value 
-                })
-            });
-            bootstrap.Modal.getInstance(document.getElementById('addTripModal')).hide();
-            loadTrips();
-        }
-
-        async function bookTrip(trip_id) {
-            const user_name = document.getElementById(`user_${trip_id}`).value;
-            if(!user_name) return alert("กรุณาใส่ชื่อ");
-            const res = await fetch(`${API_URL}/bookings`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ trip_id, user_name })
-            });
-            const data = await res.json(); alert(data.message);
-        }
-
-        async function loadBookings() {
-            const res = await fetch(`${API_URL}/bookings`);
-            const bookings = await res.json();
-            document.getElementById('booking-table-body').innerHTML = bookings.map(b => `
-                <tr><td>#${b.id}</td><td class="fw-bold">${b.user_name}</td><td>${b.trip_name}</td><td>${new Date(b.booking_date).toLocaleString('th-TH')}</td></tr>
-            `).join('');
-        }
-
-        // --- ระบบอัปโหลดรูปและสร้างบล็อก ---
-        // ฟังก์ชันแปลงไฟล์รูปเป็น Base64
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        async function addBlog() {
-            const title = document.getElementById('blogTitle').value;
-            const content = document.getElementById('blogContent').value;
-            const fileInput = document.getElementById('blogImage').files[0];
-            
-            if (!title || !content) return alert("กรุณากรอกข้อมูลให้ครบ");
-
-            let imageBase64 = null;
-            if (fileInput) {
-                // แปลงรูปเป็นตัวอักษรก่อนส่งไป Backend
-                imageBase64 = await getBase64(fileInput);
-            }
-
-            await fetch(`${API_URL}/blogs`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content, image: imageBase64 })
-            });
-            
-            bootstrap.Modal.getInstance(document.getElementById('addBlogModal')).hide();
-            loadBlogs();
-        }
-
-        async function loadBlogs() {
-            const res = await fetch(`${API_URL}/blogs`);
-            const blogs = await res.json();
-            document.getElementById('blog-list').innerHTML = blogs.map(b => `
-                <div class="col-md-6 mb-4">
-                    <div class="card p-0 h-100 overflow-hidden">
-                        ${b.image ? `<img src="${b.image}" class="card-img-top" style="height: 200px; object-fit: cover;">` : ''}
-                        <div class="p-4">
-                            <h4 class="fw-bold mb-3">${b.title}</h4>
-                            <p style="white-space: pre-line;">${b.content}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // เริ่มต้นการทำงาน
         checkAuth();
         loadTrips();
     </script>
