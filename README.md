@@ -9,6 +9,12 @@ TripSync เป็นระบบจองทริปท่องเที่�
 * **Database:** Amazon RDS (MySQL) ทำหน้าที่จัดเก็บข้อมูล (Users, Trips, Bookings, Blogs)
 
 ---
+Arichitecture
+<img width="1018" height="712" alt="Screenshot 2026-02-28 032252" src="https://github.com/user-attachments/assets/d145b417-7fe9-4b4b-8d02-96952477ac13" />
+
+CI/CD
+<img width="1881" height="508" alt="Screenshot 2026-02-28 031703" src="https://github.com/user-attachments/assets/20a13d88-0a3b-4a50-aaa5-d396e0ef9358" />
+
 
 ## 📂 Project Structure
 ```text
