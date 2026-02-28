@@ -166,6 +166,69 @@
             `).join('');
         }
 
+        // ฟังก์ชันสั่งจองทริป (ส่งข้อมูลเข้า DB จริง)
+        async function bookTrip(tripId) {
+            const inputElement = document.getElementById(`user_${tripId}`);
+            const userName = inputElement ? inputElement.value : '';
+            
+            if (!userName.trim()) {
+                alert('⚠️ กรุณาใส่ชื่อผู้จองก่อนกดปุ่มจองครับ');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trip_id: tripId, user_name: userName })
+                });
+                const data = await res.json();
+                
+                // เช็ก status: 'success' ตามที่ API ของคุณเขียนไว้
+                if (data.status === 'success') {
+                    alert('✅ ' + data.message);
+                    loadBookings(); // รีโหลดตารางการจอง
+                } else {
+                    alert('❌ ' + (data.error || 'เกิดข้อผิดพลาด'));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Database');
+            }
+        }
+
+        // ฟังก์ชันโหลดตารางประวัติการจอง (ดึงจาก DB จริง)
+        async function loadBookings() {
+            try {
+                const res = await fetch(`${API_URL}/bookings`);
+                const data = await res.json();
+                const tbody = document.getElementById('booking-table-body');
+                
+                // ถ้า API คืนค่ากลับมาเป็น error ให้แสดงข้อความ
+                if (data.error) {
+                    console.error("DB Error:", data.error);
+                    return;
+                }
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">ยังไม่มีประวัติการจองในระบบ</td></tr>';
+                    return;
+                }
+                
+                // ใช้ b.trip_name ตามคำสั่ง SQL JOIN ใน API ของคุณ
+                tbody.innerHTML = data.map(b => `
+                    <tr>
+                        <td>${b.id}</td>
+                        <td>${b.user_name}</td>
+                        <td>${b.trip_name}</td>
+                        <td>${new Date(b.booking_date).toLocaleString('th-TH')}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         checkAuth();
         loadTrips();
     </script>
